@@ -11,7 +11,7 @@ requires-python = ">=3.8"
 license = "MIT"
 keywords = []
 authors = [
-  { name = "Geovane Fedrecheski", email = "geonnave@gmail.com" },
+  { name = "Geovane Fedrecheski", email = "geovane.fedrecheski@inria.fr" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -32,7 +32,7 @@ Issues = "https://github.com/unknown/dotbot-manager/issues"
 Source = "https://github.com/unknown/dotbot-manager"
 
 [tool.hatch.version]
-path = "src/dotbot_manager/__about__.py"
+path = "./dotbot_manager/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -59,18 +59,18 @@ dependencies = [
   "mypy>=1.0.0",
 ]
 [tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:src/dotbot_manager tests}"
+check = "mypy --install-types --non-interactive {args:./dotbot_manager tests}"
 
 [tool.coverage.run]
 source_pkgs = ["dotbot_manager", "tests"]
 branch = true
 parallel = true
 omit = [
-  "src/dotbot_manager/__about__.py",
+  "./dotbot_manager/__about__.py",
 ]
 
 [tool.coverage.paths]
-dotbot_manager = ["src/dotbot_manager", "*/dotbot-manager/src/dotbot_manager"]
+dotbot_manager = ["./dotbot_manager", "*/dotbot-manager/dotbot_manager"]
 tests = ["tests", "*/dotbot-manager/tests"]
 
 [tool.coverage.report]

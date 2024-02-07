@@ -1,21 +1,13 @@
 # DotBot Manager
 
-[![PyPI - Version](https://img.shields.io/pypi/v/dotbot-manager.svg)](https://pypi.org/project/dotbot-manager)
-[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/dotbot-manager.svg)](https://pypi.org/project/dotbot-manager)
+Manage the DotBots joining your Swarm.
 
------
-
-**Table of Contents**
-
-- [Installation](#installation)
-- [License](#license)
+This server implements the `Enrollment Server (W)` specified in the [`lake-authz` draft](https://datatracker.ietf.org/doc/draft-ietf-lake-authz/).
 
 ## Installation
+Install it locally and run:
 
 ```console
-pip install dotbot-manager
+pip install -e .
+python3 dotbot_manager/main.py
 ```
-
-## License
-
-`dotbot-manager` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

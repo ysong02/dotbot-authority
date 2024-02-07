@@ -1,11 +1,12 @@
 """Module for the web server application."""
 from binascii import hexlify
 
-from fastapi import Depends, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import Depends, FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from dotbot_manager.models import DotBotManagerIdentity
+from dotbot_manager.logger import LOGGER
 
 # STATIC_FILES_DIR = os.path.join(os.path.dirname(__file__), "frontend", "build")
 
@@ -39,5 +40,20 @@ api.add_middleware(
 async def controller_id():
     """Returns the id."""
     return DotBotManagerIdentity(
-        id="123"
+        id="456"
     )
+
+class RawResponse(Response):
+    media_type = "binary/octet-stream"
+
+@api.post(
+    path="/.well-known/lake-authz/voucher-request",
+    summary="Handles a voucher request",
+)
+async def lake_authz_voucher_request(request: Request):
+    """Handles a Voucher Request."""
+    voucher_request = await request.body()
+    LOGGER.debug(f"Handling voucher request: {hexlify(voucher_request).decode()}")
+    voucher_response = api.manager.enrollment_server.handle_voucher_request(voucher_request)
+    LOGGER.debug(f"Voucher response is: {hexlify(bytes(voucher_response)).decode()}")
+    return RawResponse(content=bytes(voucher_response))

@@ -1,0 +1,16 @@
+*.xml
+*.iml
+.idea/
+.vscode/
+*.pyc
+*.gz
+*.whl
+*.orig
+*.log
+*.egg-info/
+.coverage
+.tox/
+dist/
+node_modules/
+.env
+venv

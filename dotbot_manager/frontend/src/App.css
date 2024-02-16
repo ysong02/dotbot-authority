@@ -4,3 +4,9 @@
   padding: 2rem;
   text-align: center;
 }
+
+th, td {
+  padding: 7px; /* Adjusts the padding inside cells */
+  border: 1px solid white; /* Sets the border color and width */
+  text-align: center; /* Centralizes the text inside cells */
+}

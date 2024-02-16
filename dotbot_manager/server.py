@@ -44,7 +44,9 @@ async def lake_authz_voucher_request(request: Request):
     """Handles a Voucher Request."""
     voucher_request = await request.body()
     LOGGER.debug(f"Handling voucher request: {hexlify(voucher_request).decode()}")
-    voucher_response = api.manager.enrollment_server.handle_voucher_request(voucher_request)
+    id_u = api.manager.enrollment_server.decode_voucher_request(voucher_request)
+    LOGGER.debug(f"The identity of the dotbot is: {hexlify(id_u).decode()}")
+    voucher_response = api.manager.enrollment_server.prepare_voucher(voucher_request)
     LOGGER.debug(f"Voucher response is: {hexlify(voucher_response).decode()}")
     return RawResponse(content=bytes(voucher_response))
 

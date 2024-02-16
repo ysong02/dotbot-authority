@@ -12,10 +12,9 @@ class Manager:
     def __init__(self):
         self.api = api
         api.manager = self
-        self.enrollment_server = lakers.AuthzEnrollmentServer(
+        self.enrollment_server = lakers.AuthzServerUserAcl(
             W,
             CRED_V,
-            [KID_I],
         )
         self.logger = LOGGER.bind(context=__name__)
         self.logger.debug("Creating Manager instance")

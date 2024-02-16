@@ -55,5 +55,5 @@ async def lake_authz_voucher_request(request: Request):
     voucher_request = await request.body()
     LOGGER.debug(f"Handling voucher request: {hexlify(voucher_request).decode()}")
     voucher_response = api.manager.enrollment_server.handle_voucher_request(voucher_request)
-    LOGGER.debug(f"Voucher response is: {hexlify(bytes(voucher_response)).decode()}")
+    LOGGER.debug(f"Voucher response is: {hexlify(voucher_response).decode()}")
     return RawResponse(content=bytes(voucher_response))

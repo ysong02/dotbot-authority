@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import moment from 'moment'
 
 import './App.css'
 
-let acl = [1, 2, 3]
+import {
+  apiFetchACL
+} from "./rest";
+
+// let acl = [1, 2, 3]
 let joined_dotbots_log = [
   {
     id: 1,
@@ -52,6 +56,7 @@ function JoinedDotbots({ dotbots }) {
 }
 
 function DotbotACL({ acl }) {
+  if (acl === undefined) return (<div>Loading...</div>);
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
       <h2 style={{ marginRight: "10px" }}>Allowed DotBots:</h2>
@@ -65,6 +70,19 @@ function DotbotACL({ acl }) {
 }
 
 function Dashboard() {
+  const [acl, setACL] = useState();
+
+  const fetchACL = useCallback(async () => {
+    const data = await apiFetchACL().catch(error => console.log(error));
+    setACL(data);
+  }, [setACL]);
+
+  useEffect(() => {
+    if (acl === undefined) {
+      fetchACL();
+    }
+  }, [acl]);
+
   return (
     <div>
       <h1>Dotbot Manager</h1>

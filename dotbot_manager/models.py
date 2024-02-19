@@ -6,7 +6,24 @@ from typing import List, Optional, Union
 from pydantic import BaseModel
 
 
+class DotBotNotificationCommand(IntEnum):
+    """Notification command of a DotBot."""
+
+    NONE: int = 0
+    AUTHORIZATION_RESULT: int = 1
+
 class DotBotManagerIdentity(BaseModel):
     """Simple model to hold a DotBot Manager identity."""
 
     id: str
+
+class AuthorizationResult(BaseModel):
+    timestamp: int
+    id: int
+    authorized: bool
+
+class DotBotNotificationModel(BaseModel):
+    """Model class used to send notifications."""
+
+    cmd: DotBotNotificationCommand
+    data: Optional[AuthorizationResult] = None

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import useWebSocket from 'react-use-websocket';
 import moment from 'moment'
 
 import './App.css'
@@ -7,21 +8,12 @@ import {
   apiFetchACL
 } from "./rest";
 
-// let acl = [1, 2, 3]
-let joined_dotbots_log = [
-  {
-    id: 1,
-    timestamp: moment().unix(),
-    authorized: true,
-  },
-  {
-    id: 4,
-    timestamp: moment().unix() - 1234,
-    authorized: false,
-  }
-]
+import { NotificationType } from './constants'
+
+const websocketUrl = `ws://localhost:18000/manager/ws/joined-dotbots-log`;
+
 function JoinedDotbot({ id, timestamp, authorized }) {
-  timestamp = moment(timestamp * 1000).format('YYYY-MM-DD HH:mm:ss');
+  timestamp = moment(timestamp).format('YYYY-MM-DD HH:mm:ss');
   return (
     <tr>
       <td className="firstLogCell">{timestamp}</td>
@@ -31,7 +23,7 @@ function JoinedDotbot({ id, timestamp, authorized }) {
   );
 }
 
-function JoinedDotbots({ dotbots }) {
+function AuthorizationLogs({ dotbots }) {
   return (
     <div>
       <h2>Joined DotBots Log:</h2>
@@ -46,7 +38,7 @@ function JoinedDotbots({ dotbots }) {
           </thead>
           <tbody>
             {dotbots.map((dotbot) => (
-              <JoinedDotbot key={dotbot.id} id={dotbot.id} timestamp={dotbot.timestamp} authorized={dotbot.authorized} />
+              <JoinedDotbot key={dotbot.timestamp} id={dotbot.id} timestamp={dotbot.timestamp} authorized={dotbot.authorized} />
             ))}
           </tbody>
         </table>
@@ -71,6 +63,7 @@ function DotbotACL({ acl }) {
 
 function Dashboard() {
   const [acl, setACL] = useState();
+  const [dotbots_authorization_log, setDotbotsAuthorizationLog] = useState([]);
 
   const fetchACL = useCallback(async () => {
     const data = await apiFetchACL().catch(error => console.log(error));
@@ -83,11 +76,35 @@ function Dashboard() {
     }
   }, [acl]);
 
+  const onWsOpen = () => {
+    console.log('websocket opened');
+    fetchACL();
+  };
+
+  const onWsMessage = (event) => {
+    const message = JSON.parse(event.data);
+    console.log(`websocket got new message: ${JSON.stringify(message)}`);
+    if (message.cmd === NotificationType.AuthorizationResult) {
+      setDotbotsAuthorizationLog((prev) => {
+        return [message.data, ...prev];
+      });
+      fetchACL();
+    }
+  };
+
+  useWebSocket(websocketUrl, {
+    onOpen: () => onWsOpen(),
+    onClose: () => console.log("websocket closed"),
+    onMessage: (event) => onWsMessage(event),
+    shouldReconnect: (event) => true,
+  });
+
+
   return (
     <div>
       <h1>Dotbot Manager</h1>
       <DotbotACL acl={acl} />
-      <JoinedDotbots dotbots={joined_dotbots_log} />
+      <AuthorizationLogs dotbots={dotbots_authorization_log} />
     </div>
   )
 }

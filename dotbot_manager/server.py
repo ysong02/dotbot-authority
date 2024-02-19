@@ -43,12 +43,16 @@ class RawResponse(Response):
 async def lake_authz_voucher_request(request: Request):
     """Handles a Voucher Request."""
     voucher_request = await request.body()
-    LOGGER.debug(f"Handling voucher request: {hexlify(voucher_request).decode()}")
+    LOGGER.debug(f"Handling voucher request", voucher_request=hexlify(voucher_request).decode())
     id_u = api.manager.enrollment_server.decode_voucher_request(voucher_request)
-    LOGGER.debug(f"The identity of the dotbot is: {hexlify(id_u).decode()}")
-    voucher_response = api.manager.enrollment_server.prepare_voucher(voucher_request)
-    LOGGER.debug(f"Voucher response is: {hexlify(voucher_response).decode()}")
-    return RawResponse(content=bytes(voucher_response))
+    LOGGER.debug(f"Learned dotbot's identity", id_u=id_u[-1], id_u_hex=hex(id_u[-1]))
+    if await api.manager.authorize_dotbot(id_u[-1]):
+        voucher_response = api.manager.enrollment_server.prepare_voucher(voucher_request)
+        LOGGER.debug(f"Dotbot authorized, prepared voucher response", voucher_response=hexlify(voucher_response).decode())
+        return Response(content=bytes(voucher_response), media_type = "binary/octet-stream")
+    else:
+        LOGGER.debug(f"Dotbot not authorized")
+        return Response(status_code=403)
 
 # endpoints for the frontend
 
@@ -71,4 +75,16 @@ async def controller_id():
 )
 async def get_acl():
     """Returns the id. (this is just to test the API)"""
-    return JSONResponse(content=[1, 2, 3])
+    return JSONResponse(content=api.manager.acl)
+
+@api.websocket("/manager/ws/joined-dotbots-log")
+async def websocket_endpoint(websocket: WebSocket):
+    """Websocket server endpoint."""
+    await websocket.accept()
+    api.manager.websockets.append(websocket)
+    try:
+        while True:
+            _ = await websocket.receive_text()
+    except WebSocketDisconnect:
+        if websocket in api.manager.websockets:
+            api.manager.websockets.remove(websocket)

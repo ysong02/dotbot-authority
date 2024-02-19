@@ -1,4 +1,5 @@
 """Module for the web server application."""
+import os
 from binascii import hexlify
 
 from fastapi import Depends, FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, Response
@@ -9,15 +10,14 @@ from fastapi.staticfiles import StaticFiles
 from dotbot_manager.models import DotBotManagerIdentity
 from dotbot_manager.logger import LOGGER
 
-# STATIC_FILES_DIR = os.path.join(os.path.dirname(__file__), "frontend", "build")
-
+STATIC_FILES_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 
 api = FastAPI(
     debug=0,
-    title="DotBot controller API",
-    description="This is the DotBot controller API",
+    title="DotBot manager API",
+    description="This is the DotBot manager API",
     # version=pydotbot_version(),
-    docs_url="/api",
+    docs_url="/api-docs",
     redoc_url=None,
 )
 api.add_middleware(
@@ -27,14 +27,11 @@ api.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-# api.mount(
-#     "/dotbots", StaticFiles(directory=STATIC_FILES_DIR, html=True), name="dotbots"
-# )
+api.mount(
+    "/manager", StaticFiles(directory=STATIC_FILES_DIR, html=True), name="manager"
+)
 
 # endpoints for lake-authz
-
-class RawResponse(Response):
-    media_type = "binary/octet-stream"
 
 @api.post(
     path="/.well-known/lake-authz/voucher-request",
@@ -57,7 +54,7 @@ async def lake_authz_voucher_request(request: Request):
 # endpoints for the frontend
 
 @api.get(
-    path="/manager/id",
+    path="/api/v1/id",
     response_model=DotBotManagerIdentity,
     summary="Return the manager id",
     tags=["manager"],
@@ -69,7 +66,7 @@ async def controller_id():
     )
 
 @api.get(
-    path="/manager/acl",
+    path="/api/v1/acl",
     response_model=DotBotManagerIdentity,
     summary="Return the ACL",
 )
@@ -77,7 +74,7 @@ async def get_acl():
     """Returns the id. (this is just to test the API)"""
     return JSONResponse(content=api.manager.acl)
 
-@api.websocket("/manager/ws/joined-dotbots-log")
+@api.websocket("/ws/joined-dotbots-log")
 async def websocket_endpoint(websocket: WebSocket):
     """Websocket server endpoint."""
     await websocket.accept()

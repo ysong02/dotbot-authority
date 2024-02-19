@@ -10,23 +10,23 @@ import {
 
 import { NotificationType } from './constants'
 
-const websocketUrl = `ws://localhost:18000/manager/ws/joined-dotbots-log`;
+const websocketUrl = `ws://localhost:18000/ws/joined-dotbots-log`;
 
-function JoinedDotbot({ id, timestamp, authorized }) {
+function AuthorizationLogEntry({ id, timestamp, authorized }) {
   timestamp = moment(timestamp).format('YYYY-MM-DD HH:mm:ss');
   return (
     <tr>
-      <td className="firstLogCell">{timestamp}</td>
-      <td className="logCell">{id}</td>
-      <td className="logCell">{authorized ? "✅ Authorized" : "❌ Unauthorized"}</td>
+      <td>{timestamp}</td>
+      <td>{id}</td>
+      <td>{authorized ? "✅ Authorized" : "❌ Unauthorized"}</td>
     </tr>
   );
 }
 
-function AuthorizationLogs({ dotbots }) {
+function AuthorizationLog({ dotbots }) {
   return (
     <div>
-      <h2>Joined DotBots Log:</h2>
+      <h2>DotBots Authorization Log:</h2>
       <div style={{ display: "inline-block", minWidth: "50%" }}>
         <table style={{ borderCollapse: "collapse" }}>
           <thead>
@@ -38,7 +38,7 @@ function AuthorizationLogs({ dotbots }) {
           </thead>
           <tbody>
             {dotbots.map((dotbot) => (
-              <JoinedDotbot key={dotbot.timestamp} id={dotbot.id} timestamp={dotbot.timestamp} authorized={dotbot.authorized} />
+              <AuthorizationLogEntry key={dotbot.timestamp} id={dotbot.id} timestamp={dotbot.timestamp} authorized={dotbot.authorized} />
             ))}
           </tbody>
         </table>
@@ -99,12 +99,11 @@ function Dashboard() {
     shouldReconnect: (event) => true,
   });
 
-
   return (
     <div>
       <h1>Dotbot Manager</h1>
       <DotbotACL acl={acl} />
-      <AuthorizationLogs dotbots={dotbots_authorization_log} />
+      <AuthorizationLog dotbots={dotbots_authorization_log} />
     </div>
   )
 }

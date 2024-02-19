@@ -8,7 +8,7 @@ from fastapi import WebSocket
 
 from dotbot_manager.server import api
 from dotbot_manager.logger import LOGGER
-from dotbot_manager.lake_authz import W, CRED_V, KID_I
+from dotbot_manager.lake_authz import W, CRED_V
 from dotbot_manager.models import (
     DotBotNotificationModel,
     DotBotNotificationCommand,
@@ -25,7 +25,7 @@ class Manager:
             W,
             CRED_V,
         )
-        self.acl = [1, 2, 3]
+        self.acl = [1, 2, 3, 43]
         self.authorization_log = []
         self.websockets = []
         self.logger = LOGGER.bind(context=__name__)

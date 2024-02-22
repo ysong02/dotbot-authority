@@ -67,7 +67,25 @@ async def lake_authz_voucher_request(request: Request):
         )
     else:
         LOGGER.debug(f"Dotbot not authorized")
-        return Response(status_code=403)
+        raise HTTPException(status_code=403)
+
+@api.post(
+    path="/.well-known/lake-authz/cred-request",
+    summary="Handles a credential request",
+)
+async def lake_authz_credential_request(request: Request):
+    """Handles a Credential Request."""
+    basedir = "/home/gfedrech/.dotbots-deployment1"
+    id_cred_i = await request.body()
+    kid = int(id_cred_i[-1])
+    LOGGER.debug(f"Handling credential request", kid=kid)
+    try:
+        with open(f"{basedir}/dotbot{kid}-cred-rpk.cbor", "rb") as f:
+            cred_rpk_ccs = f.read()
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Credential not found")
+    LOGGER.debug(f"Returning credential", kid=kid, cred_rpk_ccs=cred_rpk_ccs)
+    return Response(content=cred_rpk_ccs, media_type="binary/octet-stream")
 
 
 # endpoints for the frontend

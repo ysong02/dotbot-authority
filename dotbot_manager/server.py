@@ -2,7 +2,15 @@
 import os
 from binascii import hexlify
 
-from fastapi import Depends, FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request, Response
+from fastapi import (
+    Depends,
+    FastAPI,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+    Request,
+    Response,
+)
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -33,6 +41,7 @@ api.mount(
 
 # endpoints for lake-authz
 
+
 @api.post(
     path="/.well-known/lake-authz/voucher-request",
     summary="Handles a voucher request",
@@ -40,18 +49,29 @@ api.mount(
 async def lake_authz_voucher_request(request: Request):
     """Handles a Voucher Request."""
     voucher_request = await request.body()
-    LOGGER.debug(f"Handling voucher request", voucher_request=hexlify(voucher_request).decode())
+    LOGGER.debug(
+        f"Handling voucher request", voucher_request=hexlify(voucher_request).decode()
+    )
     id_u = api.manager.enrollment_server.decode_voucher_request(voucher_request)
     LOGGER.debug(f"Learned dotbot's identity", id_u=id_u[-1], id_u_hex=hex(id_u[-1]))
     if await api.manager.authorize_dotbot(id_u[-1]):
-        voucher_response = api.manager.enrollment_server.prepare_voucher(voucher_request)
-        LOGGER.debug(f"Dotbot authorized, prepared voucher response", voucher_response=hexlify(voucher_response).decode())
-        return Response(content=bytes(voucher_response), media_type = "binary/octet-stream")
+        voucher_response = api.manager.enrollment_server.prepare_voucher(
+            voucher_request
+        )
+        LOGGER.debug(
+            f"Dotbot authorized, prepared voucher response",
+            voucher_response=hexlify(voucher_response).decode(),
+        )
+        return Response(
+            content=bytes(voucher_response), media_type="binary/octet-stream"
+        )
     else:
         LOGGER.debug(f"Dotbot not authorized")
         return Response(status_code=403)
 
+
 # endpoints for the frontend
+
 
 @api.get(
     path="/api/v1/id",
@@ -61,9 +81,8 @@ async def lake_authz_voucher_request(request: Request):
 )
 async def controller_id():
     """Returns the id. (this is just to test the API)"""
-    return DotBotManagerIdentity(
-        id="456"
-    )
+    return DotBotManagerIdentity(id="456")
+
 
 @api.get(
     path="/api/v1/acl",
@@ -73,6 +92,7 @@ async def controller_id():
 async def get_acl():
     """Returns the id. (this is just to test the API)"""
     return JSONResponse(content=api.manager.acl)
+
 
 @api.websocket("/ws/joined-dotbots-log")
 async def websocket_endpoint(websocket: WebSocket):

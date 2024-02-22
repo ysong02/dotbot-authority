@@ -61,6 +61,9 @@ dependencies = [
 [tool.hatch.envs.types.scripts]
 check = "mypy --install-types --non-interactive {args:./dotbot_manager tests}"
 
+[project.scripts]
+dotbot-manager-cli = "dotbot_manager.cli:main"
+
 [tool.coverage.run]
 source_pkgs = ["dotbot_manager", "tests"]
 branch = true

@@ -11,6 +11,7 @@ import click
 from dotbot_manager.logger import setup_logging
 from dotbot_manager.manager import Manager
 
+
 @click.command()
 @click.option(
     "--log-level",

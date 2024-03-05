@@ -15,6 +15,7 @@ from dotbot_manager.models import (
     AuthorizationResult,
 )
 
+
 class Manager:
     """Main class of the Dotbot Manager."""
 
@@ -25,7 +26,7 @@ class Manager:
             W,
             CRED_V,
         )
-        self.acl = [1, 2, 3, 43]
+        self.acl = [1, 2, 3]
         self.authorization_log = []
         self.websockets = []
         self.logger = LOGGER.bind(context=__name__)
@@ -41,7 +42,9 @@ class Manager:
         authorized = id_u in self.acl
         notif = DotBotNotificationModel(
             cmd=DotBotNotificationCommand.AUTHORIZATION_RESULT,
-            data=AuthorizationResult(timestamp=int(round(time.time() * 1000)), id=id_u, authorized=authorized)
+            data=AuthorizationResult(
+                timestamp=int(round(time.time() * 1000)), id=id_u, authorized=authorized
+            ),
         )
         self.logger.debug("Notifying clients", authorized=authorized)
         await self.notify_clients(notif)

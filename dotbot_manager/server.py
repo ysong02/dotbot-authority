@@ -84,7 +84,7 @@ async def lake_authz_credential_request(request: Request):
             cred_rpk_ccs = f.read()
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Credential not found")
-    LOGGER.debug(f"Returning credential", kid=kid, cred_rpk_ccs=cred_rpk_ccs)
+    LOGGER.debug(f"Returning credential", kid=kid, cred_rpk_ccs=cred_rpk_ccs.hex(' ').upper())
     return Response(content=cred_rpk_ccs, media_type="binary/octet-stream")
 
 

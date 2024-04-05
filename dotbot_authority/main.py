@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Main module of the Dotbot Manager."""
+"""Main module of the DotBot Authority."""
 
 import asyncio
 import os
@@ -8,8 +8,8 @@ import sys
 
 import click
 
-from dotbot_manager.logger import setup_logging
-from dotbot_manager.manager import Manager
+from dotbot_authority.logger import setup_logging
+from dotbot_authority.authority import Authority
 
 
 @click.command()
@@ -22,20 +22,20 @@ from dotbot_manager.manager import Manager
 @click.option(
     "--log-output",
     type=click.Path(),
-    default=os.path.join(os.getcwd(), "dotbot_manager.log"),
+    default=os.path.join(os.getcwd(), "dotbot_authority.log"),
     help="Filename where logs are redirected",
 )
 def main(
     log_level,
     log_output,
 ):
-    """DotBotManager, central server for managing DotBots."""
-    print(f"Welcome to the DotBot Manager.")
+    """DotBotAuthority, central server for managing DotBots."""
+    print(f"Welcome to the DotBot Authority.")
 
     setup_logging(log_output, log_level, ["console", "file"])
     try:
-        manager = Manager()
-        asyncio.run(manager.run())
+        authority = Authority()
+        asyncio.run(authority.run())
     except (SystemExit, KeyboardInterrupt):
         sys.exit(0)
 

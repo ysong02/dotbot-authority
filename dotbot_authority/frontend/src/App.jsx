@@ -101,7 +101,7 @@ function Dashboard() {
 
   return (
     <div>
-      <h1>Dotbot Manager</h1>
+      <h1>DotBot Authority</h1>
       <DotbotACL acl={acl} />
       <AuthorizationLog dotbots={dotbots_authorization_log} />
     </div>

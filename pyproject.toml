@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "dotbot-manager"
+name = "dotbot-authority"
 dynamic = ["version"]
 description = ''
 readme = "README.md"
@@ -27,12 +27,12 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Documentation = "https://github.com/unknown/dotbot-manager#readme"
-Issues = "https://github.com/unknown/dotbot-manager/issues"
-Source = "https://github.com/unknown/dotbot-manager"
+Documentation = "https://github.com/unknown/dotbot-authority#readme"
+Issues = "https://github.com/unknown/dotbot-authority/issues"
+Source = "https://github.com/unknown/dotbot-authority"
 
 [tool.hatch.version]
-path = "./dotbot_manager/__about__.py"
+path = "./dotbot_authority/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -59,22 +59,22 @@ dependencies = [
   "mypy>=1.0.0",
 ]
 [tool.hatch.envs.types.scripts]
-check = "mypy --install-types --non-interactive {args:./dotbot_manager tests}"
+check = "mypy --install-types --non-interactive {args:./dotbot_authority tests}"
 
 [project.scripts]
-dotbot-manager-cli = "dotbot_manager.cli:main"
+dotbot-authority-cli = "dotbot_authority.cli:main"
 
 [tool.coverage.run]
-source_pkgs = ["dotbot_manager", "tests"]
+source_pkgs = ["dotbot_authority", "tests"]
 branch = true
 parallel = true
 omit = [
-  "./dotbot_manager/__about__.py",
+  "./dotbot_authority/__about__.py",
 ]
 
 [tool.coverage.paths]
-dotbot_manager = ["./dotbot_manager", "*/dotbot-manager/dotbot_manager"]
-tests = ["tests", "*/dotbot-manager/tests"]
+dotbot_authority = ["./dotbot_authority", "*/dotbot-authority/dotbot_authority"]
+tests = ["tests", "*/dotbot-authority/tests"]
 
 [tool.coverage.report]
 exclude_lines = [

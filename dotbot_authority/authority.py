@@ -6,22 +6,22 @@ import json
 import time
 from fastapi import WebSocket
 
-from dotbot_manager.server import api
-from dotbot_manager.logger import LOGGER
-from dotbot_manager.lake_authz import W, CRED_V
-from dotbot_manager.models import (
+from dotbot_authority.server import api
+from dotbot_authority.logger import LOGGER
+from dotbot_authority.lake_authz import W, CRED_V
+from dotbot_authority.models import (
     DotBotNotificationModel,
     DotBotNotificationCommand,
     AuthorizationResult,
 )
 
 
-class Manager:
-    """Main class of the Dotbot Manager."""
+class Authority:
+    """Main class of the DotBot Authority."""
 
     def __init__(self):
         self.api = api
-        api.manager = self
+        api.authority = self
         self.enrollment_server = lakers.AuthzServerUserAcl(
             W,
             CRED_V,
@@ -30,7 +30,7 @@ class Manager:
         self.authorization_log = []
         self.websockets = []
         self.logger = LOGGER.bind(context=__name__)
-        self.logger.debug("Creating Manager instance")
+        self.logger.debug("Creating Authority instance")
 
     async def authorize_dotbot(self, id_u):
         """
@@ -85,7 +85,7 @@ class Manager:
             raise SystemExit()
 
     async def run(self):
-        """Launch the manager."""
+        """Launch the authority."""
         tasks = []
         try:
             tasks = [
@@ -93,7 +93,7 @@ class Manager:
             ]
             await asyncio.gather(*tasks)
         except SystemExit:
-            self.logger.info("Stopping manager")
+            self.logger.info("Stopping authority")
         finally:
             for task in tasks:
                 task.cancel()

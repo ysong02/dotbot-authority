@@ -72,7 +72,7 @@ def setup_logging(filename, level, handlers):
         },
         "handlers": stdlib_handlers,
         "loggers": {
-            "dotbot_manager": {
+            "dotbot_authority": {
                 "handlers": handlers,
                 "level": LOG_LEVEL_MAP[level],
                 "propagate": True,
@@ -82,4 +82,4 @@ def setup_logging(filename, level, handlers):
     logging.config.dictConfig(stdlib_config)
 
 
-LOGGER = structlog.get_logger("dotbot_manager")
+LOGGER = structlog.get_logger("dotbot_authority")

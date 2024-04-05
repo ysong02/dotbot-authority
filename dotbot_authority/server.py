@@ -15,15 +15,15 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from dotbot_manager.models import DotBotManagerIdentity
-from dotbot_manager.logger import LOGGER
+from dotbot_authority.models import DotBotAuthorityIdentity
+from dotbot_authority.logger import LOGGER
 
 STATIC_FILES_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 
 api = FastAPI(
     debug=0,
-    title="DotBot manager API",
-    description="This is the DotBot manager API",
+    title="DotBot Authority API",
+    description="This is the DotBot Authority API",
     # version=pydotbot_version(),
     docs_url="/api-docs",
     redoc_url=None,
@@ -36,7 +36,7 @@ api.add_middleware(
     allow_headers=["*"],
 )
 api.mount(
-    "/manager", StaticFiles(directory=STATIC_FILES_DIR, html=True), name="manager"
+    "/authority", StaticFiles(directory=STATIC_FILES_DIR, html=True), name="authority"
 )
 
 # endpoints for lake-authz
@@ -52,10 +52,10 @@ async def lake_authz_voucher_request(request: Request):
     LOGGER.debug(
         f"Handling voucher request", voucher_request=hexlify(voucher_request).decode()
     )
-    id_u = api.manager.enrollment_server.decode_voucher_request(voucher_request)
+    id_u = api.authority.enrollment_server.decode_voucher_request(voucher_request)
     LOGGER.debug(f"Learned dotbot's identity", id_u=id_u[-1], id_u_hex=hex(id_u[-1]))
-    if await api.manager.authorize_dotbot(id_u[-1]):
-        voucher_response = api.manager.enrollment_server.prepare_voucher(
+    if await api.authority.authorize_dotbot(id_u[-1]):
+        voucher_response = api.authority.enrollment_server.prepare_voucher(
             voucher_request
         )
         LOGGER.debug(
@@ -93,33 +93,33 @@ async def lake_authz_credential_request(request: Request):
 
 @api.get(
     path="/api/v1/id",
-    response_model=DotBotManagerIdentity,
-    summary="Return the manager id",
-    tags=["manager"],
+    response_model=DotBotAuthorityIdentity,
+    summary="Return the authority id",
+    tags=["authority"],
 )
 async def controller_id():
     """Returns the id. (this is just to test the API)"""
-    return DotBotManagerIdentity(id="456")
+    return DotBotAuthorityIdentity(id="456")
 
 
 @api.get(
     path="/api/v1/acl",
-    response_model=DotBotManagerIdentity,
+    response_model=DotBotAuthorityIdentity,
     summary="Return the ACL",
 )
 async def get_acl():
     """Returns the id. (this is just to test the API)"""
-    return JSONResponse(content=api.manager.acl)
+    return JSONResponse(content=api.authority.acl)
 
 
 @api.websocket("/ws/joined-dotbots-log")
 async def websocket_endpoint(websocket: WebSocket):
     """Websocket server endpoint."""
     await websocket.accept()
-    api.manager.websockets.append(websocket)
+    api.authority.websockets.append(websocket)
     try:
         while True:
             _ = await websocket.receive_text()
     except WebSocketDisconnect:
-        if websocket in api.manager.websockets:
-            api.manager.websockets.remove(websocket)
+        if websocket in api.authority.websockets:
+            api.authority.websockets.remove(websocket)

@@ -13,8 +13,8 @@ class DotBotNotificationCommand(IntEnum):
     AUTHORIZATION_RESULT: int = 1
 
 
-class DotBotManagerIdentity(BaseModel):
-    """Simple model to hold a DotBot Manager identity."""
+class DotBotAuthorityIdentity(BaseModel):
+    """Simple model to hold a DotBot Authority identity."""
 
     id: str
 

@@ -1,4 +1,4 @@
-# DotBot Manager
+# DotBot Authority
 
 Manage the DotBots joining your Swarm.
 
@@ -9,5 +9,5 @@ Install it locally and run:
 
 ```console
 pip install -e .
-python3 dotbot_manager/main.py
+python3 dotbot_authority/main.py
 ```

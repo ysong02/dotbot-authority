@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
 """
-dotbot-manager-cli new --basedir ~/.dotbots-deployment1 --label dotbot1
-dotbot-manager-cli new --basedir ~/.dotbots-deployment1 --label dotbot2
-dotbot-manager-cli new --basedir ~/.dotbots-deployment1 --label dotbot3
-dotbot-manager-cli new --basedir ~/.dotbots-deployment1 --label dotbot4
-dotbot-manager-cli new --basedir ~/.dotbots-deployment1 --label gateway6
-dotbot-manager-cli new --basedir ~/.dotbots-deployment1 --label server9
+dotbot-authority-cli new --basedir ~/.dotbots-deployment1 --label dotbot1
+dotbot-authority-cli new --basedir ~/.dotbots-deployment1 --label dotbot2
+dotbot-authority-cli new --basedir ~/.dotbots-deployment1 --label dotbot3
+dotbot-authority-cli new --basedir ~/.dotbots-deployment1 --label dotbot4
+dotbot-authority-cli new --basedir ~/.dotbots-deployment1 --label gateway6
+dotbot-authority-cli new --basedir ~/.dotbots-deployment1 --label server9
 """
 
 import uuid, cbor2, click, os, re, rich, glob

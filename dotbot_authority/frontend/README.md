@@ -1,4 +1,4 @@
-# Frontend for DotBot Manager
+# Frontend for DotBot Authority
 
 ```bash
 npm install

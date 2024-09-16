@@ -8,9 +8,8 @@ import sys
 
 import click
 
-from dotbot_authority.logger import setup_logging
-from dotbot_authority.authority import Authority
-
+from logger import setup_logging
+from authority import Authority
 
 @click.command()
 @click.option(

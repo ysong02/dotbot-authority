@@ -15,8 +15,9 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from dotbot_authority.models import DotBotAuthorityIdentity
-from dotbot_authority.logger import LOGGER
+from models import DotBotAuthorityIdentity
+from logger import LOGGER
+
 
 STATIC_FILES_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 
@@ -38,6 +39,10 @@ api.add_middleware(
 api.mount(
     "/authority", StaticFiles(directory=STATIC_FILES_DIR, html=True), name="authority"
 )
+
+# api.mount(
+#     "/attesetation", StaticFiles(directory=ATTESTATION_FILES_DIR, html= True), name="attestation"
+# )
 
 # endpoints for lake-authz
 
@@ -87,6 +92,28 @@ async def lake_authz_credential_request(request: Request):
     LOGGER.debug(f"Returning credential", kid=kid, cred_rpk_ccs=cred_rpk_ccs.hex(' ').upper())
     return Response(content=cred_rpk_ccs, media_type="binary/octet-stream")
 
+#endpoints for lake-ra
+
+
+#do the first round later
+
+@api.post(
+    path="/.well-known/lake-ra/evidence",
+    summary="Handles an evidence attestation token",
+)
+async def lake_ra_evidence(request: Request):
+    """Handles an evidence attestation token."""
+    evidence = await request.body()
+    print(f"Evidence type: {type(evidence)}, Evidence: {evidence.hex()}")
+    
+    nonce = api.authority.nonce
+    public_key_bytes = api.authority.public_key_bytes
+    if await api.authority.evaluate_evidence(evidence, nonce, public_key_bytes):
+        attestation_result = b"verified"
+        return Response(content=attestation_result, media_type="binary/octet-stream")
+    else:
+        return Response(content= b"attestation test result is fail", media_type="binary/octet-stream")
+        #raise HTTPException(status_code=400, detail="Verification failed")
 
 # endpoints for the frontend
 

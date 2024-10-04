@@ -1,5 +1,6 @@
 """Module for the web server application."""
 import os
+import cbor2
 from binascii import hexlify
 
 from fastapi import (
@@ -80,12 +81,12 @@ async def lake_authz_voucher_request(request: Request):
 )
 async def lake_authz_credential_request(request: Request):
     """Handles a Credential Request."""
-    basedir = "/home/gfedrech/.dotbots-deployment1"
+    basedir = "C:\\Users\\yusong\\Downloads\\test-edhoc-handshake\\dotbots-deployment1"
     id_cred_i = await request.body()
     kid = int(id_cred_i[-1])
     LOGGER.debug(f"Handling credential request", kid=kid)
     try:
-        with open(f"{basedir}/dotbot{kid}-cred-rpk.cbor", "rb") as f:
+        with open(f"{basedir}\\dotbot{kid}-cred-rpk.cbor", "rb") as f:
             cred_rpk_ccs = f.read()
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Credential not found")
@@ -95,7 +96,31 @@ async def lake_authz_credential_request(request: Request):
 #endpoints for lake-ra
 
 
-#do the first round later
+# need to improve the function, select evidence type, change the exception
+@api.post(
+    path="/.well-known/lake-ra/attestation-proposal",
+    summary="Handles an attestation proposal",
+)
+async def lake_ra_attestation_proposal(request: Request):
+    """Handles an attestation proposal."""
+    attestation_proposal = await request.body()
+    #print(f"Evidence type: {type(evidence)}, Evidence: {evidence.hex()}")
+    LOGGER.debug(
+        f"Handling attestation proposal", attestation_proposal=hexlify(attestation_proposal).decode()
+    )
+    if attestation_proposal!=None:
+        attestation_request_content = [258]
+        attestation_request = cbor2.dumps(attestation_request_content)
+        LOGGER.debug(
+            f"prepared attestation request",
+            attestation_request=hexlify(attestation_request).decode(),
+        )
+        return Response(
+            content=attestation_request, media_type="binary/octet-stream"
+        )
+    else:
+        LOGGER.debug(f"Attestation proposal is none")
+        raise HTTPException(status_code=403)
 
 @api.post(
     path="/.well-known/lake-ra/evidence",
@@ -110,7 +135,7 @@ async def lake_ra_evidence(request: Request):
     public_key_bytes = api.authority.public_key_bytes
     if await api.authority.evaluate_evidence(evidence, nonce, public_key_bytes):
         attestation_result = b"verified"
-        return Response(content=attestation_result, media_type="binary/octet-stream")
+        return Response(content= cbor2.dumps(attestation_result), media_type="binary/octet-stream")
     else:
         return Response(content= b"attestation test result is fail", media_type="binary/octet-stream")
         #raise HTTPException(status_code=400, detail="Verification failed")

@@ -83,7 +83,6 @@ function AttestationLog({ results }) {
         </table>
       </div>
     </div>
-
   );
 }
 

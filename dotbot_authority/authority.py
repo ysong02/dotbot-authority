@@ -123,7 +123,8 @@ class Authority:
         attester_nonce = decoded_info["nonce"]
         attester_hash = decoded_info["measurements"][0]["files_info"][0]["hash_value"]
         fs_size = decoded_info["measurements"][0]["files_info"][0]["size"]
-        file_name = decoded_info["measurements"][0]["files_info"][0]["fs_name"] 
+        #file_name = decoded_info["measurements"][0]["files_info"][0]["fs_name"] 
+        file_name = "01drv_attestation-nrf52840dk.bin"
         verifier_hash_file = os.path.join(self.file_directory, file_name)
 
         # check nonce

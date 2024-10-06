@@ -118,14 +118,16 @@ class Authority:
     async def evaluate_evidence(self, cbor_bytes, verifier_nonce, public_key_bytes):
         #status = CHECK_SUCCESS
         attestation_result = False
-
+        LOGGER.debug(f"start to evaluate the evidence")
         decoded_info = decode_cose_sign1_message(cbor_bytes, public_key_bytes)
         attester_nonce = decoded_info["nonce"]
         attester_hash = decoded_info["measurements"][0]["files_info"][0]["hash_value"]
         fs_size = decoded_info["measurements"][0]["files_info"][0]["size"]
-        #file_name = decoded_info["measurements"][0]["files_info"][0]["fs_name"] 
-        file_name = "01drv_attestation-nrf52840dk.bin"
+        file_name = decoded_info["measurements"][0]["files_info"][0]["fs_name"] 
+        #file_name = "01drv_attestation-nrf52840dk.bin"
         verifier_hash_file = os.path.join(self.file_directory, file_name)
+
+        LOGGER.debug(f"finished parsing evidence, start to compare")
 
         # check nonce
         if verifier_nonce == attester_nonce:

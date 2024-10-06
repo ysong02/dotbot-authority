@@ -134,10 +134,12 @@ async def lake_ra_evidence(request: Request):
     nonce = api.authority.nonce
     public_key_bytes = api.authority.public_key_bytes
     if await api.authority.evaluate_evidence(evidence, nonce, public_key_bytes):
-        attestation_result = b"verified"
+        LOGGER.debug(f"Attestation result is good")
+        attestation_result = 0
         return Response(content= cbor2.dumps(attestation_result), media_type="binary/octet-stream")
     else:
-        return Response(content= b"attestation test result is fail", media_type="binary/octet-stream")
+        LOGGER.debug(f"Attestation result is bad")
+        return Response(content= cbor2.dumps(-1), media_type="binary/octet-stream")
         #raise HTTPException(status_code=400, detail="Verification failed")
 
 # endpoints for the frontend

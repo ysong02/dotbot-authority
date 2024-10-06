@@ -1,6 +1,7 @@
 import cbor2
 from pycose.messages.sign1message import Sign1Message
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+from logger import LOGGER
 
 IANA_CBOR_COSWID_FILE_FS_NAME_KEY = 24
 IANA_CBOR_COSWID_FILE_SIZE_KEY = 20
@@ -85,6 +86,7 @@ def parse_payload(payload_bytes):
     return decoded_info  
 
 def decode_cose_sign1_message(cose_sign1_bytes, public_key_bytes):
+    LOGGER.debug(f"start to parse the cose_sign1 message")
 
     # decode the COSE_Sign1 message
     cose_msg = Sign1Message.decode(cose_sign1_bytes)

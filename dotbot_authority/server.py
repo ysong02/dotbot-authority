@@ -18,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 
 from models import DotBotAuthorityIdentity
 from logger import LOGGER
+from errors import NoMatchError
 
 
 STATIC_FILES_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
@@ -103,14 +104,16 @@ async def lake_authz_credential_request(request: Request):
 )
 async def lake_ra_attestation_proposal(request: Request):
     """Handles an attestation proposal."""
-    attestation_proposal = await request.body()
-    #print(f"Evidence type: {type(evidence)}, Evidence: {evidence.hex()}")
+    payload = await request.body()
+    payload = cbor2.loads(payload)
+    c_r = payload[0]
+    attestation_proposal = payload[1]
+
     LOGGER.debug(
         f"Handling attestation proposal", attestation_proposal=hexlify(attestation_proposal).decode()
     )
-    if attestation_proposal!=None:
-        attestation_request_content = [258]
-        attestation_request = cbor2.dumps(attestation_request_content)
+    try:
+        attestation_request = await api.authority.handle_attestation_proposal(c_r, attestation_proposal) 
         LOGGER.debug(
             f"prepared attestation request",
             attestation_request=hexlify(attestation_request).decode(),
@@ -118,9 +121,9 @@ async def lake_ra_attestation_proposal(request: Request):
         return Response(
             content=attestation_request, media_type="binary/octet-stream"
         )
-    else:
-        LOGGER.debug(f"Attestation proposal is none")
-        raise HTTPException(status_code=403)
+    except NoMatchError as e:
+        LOGGER.debug(f"cannot generate attestation request")
+        raise HTTPException(status_code=403, detail = str(e))
 
 @api.post(
     path="/.well-known/lake-ra/evidence",
@@ -128,12 +131,13 @@ async def lake_ra_attestation_proposal(request: Request):
 )
 async def lake_ra_evidence(request: Request):
     """Handles an evidence attestation token."""
-    evidence = await request.body()
-    print(f"Evidence type: {type(evidence)}, Evidence: {evidence.hex()}")
+    payload = await request.body()
+    payload = cbor2.loads(payload)
+    c_r = payload[0]
+    evidence = payload[1]
     
-    nonce = api.authority.nonce
     public_key_bytes = api.authority.public_key_bytes
-    if await api.authority.evaluate_evidence(evidence, nonce, public_key_bytes):
+    if await api.authority.evaluate_evidence(c_r, evidence, public_key_bytes):
         LOGGER.debug(f"Attestation result is good")
         attestation_result = 0
         return Response(content= cbor2.dumps(attestation_result), media_type="binary/octet-stream")

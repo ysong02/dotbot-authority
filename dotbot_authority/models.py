@@ -27,7 +27,7 @@ class AuthorizationResult(BaseModel):
 
 
 class AttestationResult(BaseModel):
-    id: int
+    id: str
     attestation_result: bool
     software_name: str
     fs_name: str

@@ -132,7 +132,7 @@ class Authority:
         attester_ueid = decoded_info["ueid"]
         attester_hash = decoded_info["measurements"][0]["files_info"][0]["hash_value"]
         attester_software_name = decoded_info["measurements"][0]["software_name"]
-        fs_size = decoded_info["measurements"][0]["files_info"][0]["size"]
+        #fs_size = decoded_info["measurements"][0]["files_info"][0]["size"]
         file_name = decoded_info["measurements"][0]["files_info"][0]["fs_name"] 
         #verifier_hash_file = os.path.join(self.file_directory, file_name)
 
@@ -186,7 +186,6 @@ class Authority:
                 attestation_result= attestation_result,
                 software_name = decoded_info["measurements"][0]["software_name"],
                 fs_name = file_name,
-                fs_size = fs_size,
                 tag_version = decoded_info["measurements"][0]["tag_version"],
             ),
         )

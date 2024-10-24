@@ -31,7 +31,6 @@ class AttestationResult(BaseModel):
     attestation_result: bool
     software_name: str
     fs_name: str
-    fs_size: int
     tag_version: int
 
 

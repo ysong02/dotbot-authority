@@ -22,13 +22,12 @@ function AuthorizationLogEntry({ id, timestamp, authorized}) {
     </tr>
   );
 }
-function AttestationLogEntry({ id, attestation_result, software_name, fs_name, fs_size, tag_version}) {
+function AttestationLogEntry({ id, attestation_result, software_name, fs_name, tag_version}) {
   return(
     <tr>
       <td>{id}</td>
       <td>{software_name}</td>
       <td>{fs_name}</td>
-      <td>{fs_size}</td>
       <td>{tag_version}</td>
       <td>{attestation_result ? "✅ Verified" : "❌ Not Verified"}</td>
     </tr>
@@ -70,14 +69,13 @@ function AttestationLog({ results }) {
               <th>ID</th>
               <th>Sofware Name</th>
               <th>Source File</th>
-              <th>Source File Size</th>
               <th>Evidence Tag Version</th>
               <th>Attestation Result</th>
             </tr>
           </thead>
           <tbody>
             {results.map((result) => (
-              <AttestationLogEntry key={result.id} id={result.id} software_name={result.software_name} fs_name={result.fs_name} fs_size={result.fs_size} tag_version={result.tag_version} attestation_result={result.attestation_result} />
+              <AttestationLogEntry key={result.id} id={result.id} software_name={result.software_name} fs_name={result.fs_name} tag_version={result.tag_version} attestation_result={result.attestation_result} />
             ))}
           </tbody>
         </table>

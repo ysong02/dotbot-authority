@@ -4,7 +4,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 from logger import LOGGER
 
 IANA_CBOR_COSWID_FILE_FS_NAME_KEY = 24
-IANA_CBOR_COSWID_FILE_SIZE_KEY = 20
+#IANA_CBOR_COSWID_FILE_SIZE_KEY = 20
 IANA_CBOR_COSWID_FILE_HASH_IMAGE_KEY = 7
 IANA_CBOR_COSWID_FILE_KEY = 17
 
@@ -59,7 +59,7 @@ def parse_payload(payload_bytes):
                     for file_data in files:
                         
                         fs_name = file_data.get(IANA_CBOR_COSWID_FILE_FS_NAME_KEY)
-                        size = file_data.get(IANA_CBOR_COSWID_FILE_SIZE_KEY)
+                        #size = file_data.get(IANA_CBOR_COSWID_FILE_SIZE_KEY)
                         hash_image = file_data.get(IANA_CBOR_COSWID_FILE_HASH_IMAGE_KEY)
 
                         if hash_image:
@@ -67,7 +67,7 @@ def parse_payload(payload_bytes):
                             hash_value = hash_image[1].hex()
                         file_info = {
                             "fs_name": fs_name,
-                            "size": size,
+                            #"size": size,
                             "hash_alg": hash_alg,
                             "hash_value": hash_value,
                         }

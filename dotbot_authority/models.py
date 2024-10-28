@@ -11,6 +11,7 @@ class DotBotNotificationCommand(IntEnum):
 
     NONE: int = 0
     AUTHORIZATION_RESULT: int = 1
+    ATTESTATION_RESULT: int = 2
 
 
 class DotBotAuthorityIdentity(BaseModel):
@@ -25,8 +26,17 @@ class AuthorizationResult(BaseModel):
     authorized: bool
 
 
+class AttestationResult(BaseModel):
+    id: str
+    attestation_result: bool
+    software_name: str
+    fs_name: str
+    tag_version: int
+
+
+
 class DotBotNotificationModel(BaseModel):
     """Model class used to send notifications."""
 
     cmd: DotBotNotificationCommand
-    data: Optional[AuthorizationResult] = None
+    data: Optional[Union[AuthorizationResult, AttestationResult]] = None

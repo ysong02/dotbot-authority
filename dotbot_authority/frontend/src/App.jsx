@@ -12,7 +12,7 @@ import { NotificationType } from './constants'
 
 const websocketUrl = `ws://localhost:18000/ws/joined-dotbots-log`;
 
-function AuthorizationLogEntry({ id, timestamp, authorized}) {
+/* function AuthorizationLogEntry({ id, timestamp, authorized}) {
   timestamp = moment(timestamp).format('YYYY-MM-DD HH:mm:ss');
   return (
     <tr>
@@ -21,20 +21,22 @@ function AuthorizationLogEntry({ id, timestamp, authorized}) {
       <td>{authorized ? "✅ Authorized" : "❌ Unauthorized"}</td>
     </tr>
   );
-}
-function AttestationLogEntry({ id, attestation_result, software_name, fs_name, tag_version}) {
+} */
+function AttestationLogEntry({ id, timestamp, attestation_result, fs_name, firmware_hash, decision}) {
+  timestamp = moment(timestamp).format('YYYY-MM-DD HH:mm:ss');
   return(
     <tr>
+      <td>{timestamp}</td>
       <td>{id}</td>
-      <td>{software_name}</td>
       <td>{fs_name}</td>
-      <td>{tag_version}</td>
-      <td>{attestation_result ? "✅ Verified" : "❌ Not Verified"}</td>
+      <td>{attestation_result}</td>
+      <td>{firmware_hash}</td>
+      <td>{decision ? "✅ Accepted" : "❌ Rejected"}</td>
     </tr>
   )
 }
 
-function AuthorizationLog({ dotbots }) {
+/* function AuthorizationLog({ dotbots }) {
   return (
     <div>
       <h2>DotBots Authorization Log:</h2>
@@ -56,47 +58,100 @@ function AuthorizationLog({ dotbots }) {
       </div>
     </div>
   );
-}
+} */
 
-function AttestationLog({ results }) {
-  return (
-    <div>
-      <h2>DotBots Attestation Log:</h2>
-      <div style={{ display: "inline-block", minWidth: "50%" }}>
-        <table style={{ borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Sofware Name</th>
-              <th>Source File</th>
-              <th>Evidence Tag Version</th>
-              <th>Attestation Result</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((result) => (
-              <AttestationLogEntry key={result.id} id={result.id} software_name={result.software_name} fs_name={result.fs_name} tag_version={result.tag_version} attestation_result={result.attestation_result} />
-            ))}
-          </tbody>
-        </table>
+  function AttestationLog({ results }) {
+    const sortedResults = [...results].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    return (
+      <div>
+        <h2>DotBots Attestation Log:</h2>
+        <div style={{ display: "inline-block", minWidth: "50%" }}>
+          <table style={{ borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>ID</th>
+                {/* <th>Sofware Name</th> */}
+                <th>Source File</th>
+                <th>Attestation Result</th>
+                <th>Firmware Hash Value</th>
+                <th>Decision</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedResults.map((result) => (
+                <AttestationLogEntry 
+                  key={result.timestamp} 
+                  id={result.id} 
+                  timestamp={result.timestamp} 
+                  fs_name={result.fs_name} 
+                  attestation_result={result.attestation_result} 
+                  firmware_hash={result.firmware_hash} 
+                  decision={result.decision}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+  
+
+// function DotbotACL({ acl }) {
+//   if (acl === undefined) return (<div>Loading...</div>);
+//   return (
+//     <div style={{ display: "flex", alignItems: "center" }}>
+//       <h2 style={{ marginRight: "10px" }}>Allowed DotBots' firmware version:</h2>
+//       <div>
+//         {acl.map((id) => (
+//           <span style={{ margin: 5, padding: 5, border: "1px solid white" }} key={id}>{id}</span>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// }
 
 function DotbotACL({ acl }) {
-  if (acl === undefined) return (<div>Loading...</div>);
+  if (acl === undefined) return <div>Loading...</div>;
+
+  // Define the versions for each row
+  const versions = ["v0.9", "v1.0"];
+
   return (
-    <div style={{ display: "flex", alignItems: "center" }}>
-      <h2 style={{ marginRight: "10px" }}>Allowed DotBots:</h2>
-      <div>
-        {acl.map((id) => (
-          <span style={{ margin: 5, padding: 5, border: "1px solid white" }} key={id}>{id}</span>
-        ))}
-      </div>
+    <div>
+      <h2>Allowed DotBot's Firmware Version: v1.0</h2>
+      <h2>DotBot Firmware Table</h2>
+      <table style={{ borderCollapse: "collapse", width: "100%" }}>
+        <thead>
+          <tr>
+            <th style={{ border: "1px solid black", padding: "8px", textAlign: "left" }}>
+              Version
+            </th>
+            <th style={{ border: "1px solid black", padding: "8px", textAlign: "left" }}>
+              Firmware Hash Value
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {acl.map((id, index) => (
+            <tr key={id}>
+              <td style={{ border: "1px solid black", padding: "8px" }}>
+                {versions[index] || "Unknown"}
+              </td>
+              <td style={{ border: "1px solid black", padding: "8px" }}>
+                {id}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
+
+
+
 
 function Dashboard() {
   const [acl, setACL] = useState();
@@ -130,10 +185,10 @@ function Dashboard() {
     //   fetchACL();
     // }
     switch (message.cmd){
-      case NotificationType.AuthorizationResult:
+/*       case NotificationType.AuthorizationResult:
         setDotbotsAuthorizationLog((prev) => [message.data, ...prev]);
         fetchACL();
-        break;
+        break; */
 
       case NotificationType.AttestationResult:
         setDotbotsAttestationLog((prev) => [message.data, ...prev]);
@@ -150,9 +205,9 @@ function Dashboard() {
 
   return (
     <div>
-      <h1>DotBot Authority</h1>
+      <h1>DotBot Attestation</h1>
       <DotbotACL acl={acl} />
-      <AuthorizationLog dotbots={dotbots_authorization_log} />
+      {/* <AuthorizationLog dotbots={dotbots_authorization_log} /> */}
       <AttestationLog results={dotbots_attestation_log} />
     </div>
   )

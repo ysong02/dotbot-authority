@@ -27,11 +27,14 @@ class AuthorizationResult(BaseModel):
 
 
 class AttestationResult(BaseModel):
+    timestamp: int
     id: str
-    attestation_result: bool
-    software_name: str
+    attestation_result: str
+    # software_name: str
     fs_name: str
-    tag_version: int
+    #tag_version: int
+    firmware_hash: str
+    decision: bool
 
 
 

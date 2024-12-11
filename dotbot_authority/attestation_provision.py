@@ -4,7 +4,9 @@ public_key_bytes = bytes.fromhex('b24f6d4e5f8147af1d1cd8c26e1a510b7a0f7f0a7bcc60
 basedir = r"C:\Users\yusong\OneDrive - INRIA\Documents\implementation\DotBot-firmware-token\projects\03app_dotbot\Output\nrf5340dk-app\Debug\Exe"
 accepted_type_evidence = [60, 61, 258] #cbor /cwt /swid+cbor
 approved_hash_evidence = [
-    ("5e0b9ca06bd0fe8af89142525d50d6b197393d3102d7a4b08c52e8f786fc67e4", "DotBot"),
-    ("666b9ca06bd0fe8af86666666650d6b197393d3102d7a4b08c52e8f786666666", "CoffeeBot firmware"),
-
+    ("9db1221d2ff7e268b38f3d321b0a42591ffdd7ed2028a5ee678f342329e3722a"),
+]
+list_hash_versions = [
+    ("a9bd6a4436951ae4cf1b7b9a8d6696321fe10b981916e1dc9e4a3bb8067a9a79"),
+    ("9db1221d2ff7e268b38f3d321b0a42591ffdd7ed2028a5ee678f342329e3722a"),
 ]

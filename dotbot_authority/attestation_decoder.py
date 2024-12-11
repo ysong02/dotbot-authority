@@ -41,14 +41,14 @@ def parse_payload(payload_bytes):
 
             content_format_id = measurement[0]
             coswid = measurement[1]
-            tag_id = coswid.get(IANA_CBOR_COSWID_TAG_ID_KEY)
+            #tag_id = coswid.get(IANA_CBOR_COSWID_TAG_ID_KEY)
             tag_version = coswid.get(IANA_CBOR_COSWID_TAG_VERSION_KEY)
-            software_name = coswid.get(IANA_CBOR_COSWID_SOFTWARE_NAME_KEY)
+            #software_name = coswid.get(IANA_CBOR_COSWID_SOFTWARE_NAME_KEY)
 
-            entity = coswid.get(IANA_CBOR_COSWID_ENTITY_KEY)
-            if entity:
-                entity_name = entity.get(IANA_CBOR_COSWID_ENTITY_ENTITY_NAME_KEY)
-                entity_role = entity.get(IANA_CBOR_COSWID_ENTITY_ROLE)
+            # entity = coswid.get(IANA_CBOR_COSWID_ENTITY_KEY)
+            # if entity:
+            #     entity_name = entity.get(IANA_CBOR_COSWID_ENTITY_ENTITY_NAME_KEY)
+            #     entity_role = entity.get(IANA_CBOR_COSWID_ENTITY_ROLE)
     
             evidence = coswid.get(IANA_CBOR_COSWID_EVIDENCE_KEY)
             files_info = []
@@ -75,11 +75,11 @@ def parse_payload(payload_bytes):
 
     decoded_info["measurements"].append({
         "content_format_id": content_format_id,
-        "tag_id": tag_id,
+        #"tag_id": tag_id,
         "tag_version": tag_version,
-        "software_name": software_name,
-        "entity_name": entity_name,
-        "entity_role": entity_role,
+        #"software_name": software_name,
+        #"entity_name": entity_name,
+        #"entity_role": entity_role,
         "files_info": files_info,
     })
 
@@ -102,7 +102,7 @@ def decode_cose_sign1_message(cose_sign1_bytes, public_key_bytes):
     sig_structure = cbor2.dumps(["Signature1", protected_header, external_aad, payload])
     #try:
     public_key.verify(signature, sig_structure)
-    print("Signature check: SUCCES\n Signature is: ", signature.hex())
+    print("Signature check: SUCCESS\n Signature is: ", signature.hex())
     # except InvalidSignauture as e:
     #     raise MyException ()    
     if isinstance(payload, bytes):

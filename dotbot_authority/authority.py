@@ -24,7 +24,7 @@ from attestation_decoder import decode_cose_sign1_message
 from cryptography.exceptions import InvalidSignature
 import os
 
-from attestation_provision import public_key_bytes, basedir, accepted_type_evidence, approved_hash_evidence
+from attestation_provision import public_key_bytes, basedir, accepted_type_evidence, approved_hash_evidence, list_hash_versions
 from errors import NoMatchError
 
 class Authority:
@@ -37,7 +37,8 @@ class Authority:
             W,
             CRED_V,
         )
-        self.acl = [1, 43]
+        #self.acl = [1, 43]
+        self.acl = list_hash_versions
         self.authorization_log = []
         self.websockets = []
         self.logger = LOGGER.bind(context=__name__)
@@ -131,8 +132,7 @@ class Authority:
         attester_nonce = decoded_info["nonce"]
         attester_ueid = decoded_info["ueid"]
         attester_hash = decoded_info["measurements"][0]["files_info"][0]["hash_value"]
-        attester_software_name = decoded_info["measurements"][0]["software_name"]
-        #fs_size = decoded_info["measurements"][0]["files_info"][0]["size"]
+        #attester_software_name = decoded_info["measurements"][0]["software_name"]
         file_name = decoded_info["measurements"][0]["files_info"][0]["fs_name"] 
         #verifier_hash_file = os.path.join(self.file_directory, file_name)
 
@@ -145,9 +145,9 @@ class Authority:
         # check nonce
         if nonce.hex() == attester_nonce:
             attestation_result = True
-            print("Nonce check: SUCCESS\n Nonce is: ", nonce.hex())
+            print("Nonce check: NONCE\n Nonce is: ", nonce.hex())
         else:
-            print("Nonce check: FAIL\n Nonce from the Attester is: \n", attester_nonce , "\n Nonce from the Verifier is: \n",  nonce.hex())
+            print("Nonce check: DIFFERENT\n Nonce from the Attester is: \n", attester_nonce , "\n Nonce from the Verifier is: \n",  nonce.hex())
 
         # check hash  
         # with open(verifier_hash_file, 'r+b') as file:
@@ -174,19 +174,29 @@ class Authority:
         #         f"{verifier_hash}"
         #     )
 
-        if (attester_hash.lower(), attester_software_name) in [(hash.lower(), software_name) for hash, software_name in approved_hash_evidence]:
+        if (attester_hash.lower()) in [(hash.lower()) for hash in approved_hash_evidence]:
             attestation_result = True
-            print(f"Hash value check: SUCCESS\n Hash value is: {attester_hash}")
-        
+            result_version = "v1.0"
+            print(f"Firmware Hash value check: SUCCESS\n Hash value is: {attester_hash}")
+        else:
+            attestation_result = False
+            print(f"Firmware Hash value check: FAIL\n Hash value is: {attester_hash}")
+            if (attester_hash.lower()) in [(hash.lower()) for hash in list_hash_versions]:
+                result_version = "v0.9"
+            else:
+                result_version = "not recognized"
 
         notif = DotBotNotificationModel(
             cmd=DotBotNotificationCommand.ATTESTATION_RESULT,
             data=AttestationResult(
+                timestamp=int(round(time.time() * 1000)),
                 id= attester_ueid,
-                attestation_result= attestation_result,
-                software_name = decoded_info["measurements"][0]["software_name"],
+                decision= attestation_result,
+                #software_name = decoded_info["measurements"][0]["software_name"],
                 fs_name = file_name,
-                tag_version = decoded_info["measurements"][0]["tag_version"],
+                #tag_version = decoded_info["measurements"][0]["tag_version"],
+                firmware_hash = attester_hash,
+                attestation_result = result_version,
             ),
         )
         self.logger.debug("notify client of attestation result", attestation_result = attestation_result)

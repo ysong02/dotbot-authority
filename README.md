@@ -2,7 +2,7 @@
 
 Manage the DotBots joining your Swarm.
 
-This server implements the `Enrollment Server (W)` specified in the [`lake-authz` draft](https://datatracker.ietf.org/doc/draft-ietf-lake-authz/).
+This server implements the `Verifier (V)` specified in the [`lake-ra` draft](https://datatracker.ietf.org/doc/draft-song-lake-ra/).
 
 ## Installation
 Install it locally and run:

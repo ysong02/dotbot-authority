@@ -19,7 +19,9 @@ from fastapi.staticfiles import StaticFiles
 from models import DotBotAuthorityIdentity
 from logger import LOGGER
 from errors import NoMatchError
-
+import secrets
+from attestation_provision import approved_hash_dotbot, approved_hash_controller
+from attestation_decoder import generate_result_pp
 
 STATIC_FILES_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
 
@@ -85,13 +87,15 @@ async def lake_authz_credential_request(request: Request):
     basedir = "C:\\Users\\yusong\\Downloads\\test-edhoc-handshake\\dotbots-deployment1"
     id_cred_i = await request.body()
     kid = int(id_cred_i[-1])
+    print(kid)
     LOGGER.debug(f"Handling credential request", kid=kid)
     try:
         with open(f"{basedir}\\dotbot{kid}-cred-rpk.cbor", "rb") as f:
             cred_rpk_ccs = f.read()
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Credential not found")
-    LOGGER.debug(f"Returning credential", kid=kid, cred_rpk_ccs=cred_rpk_ccs.hex(' ').upper())
+    #LOGGER.debug(f"Returning credential", kid=kid, cred_rpk_ccs=cred_rpk_ccs.hex(' ').upper())
+    print(cred_rpk_ccs)
     return Response(content=cred_rpk_ccs, media_type="binary/octet-stream")
 
 #endpoints for lake-ra
@@ -106,18 +110,48 @@ async def lake_ra_attestation_proposal(request: Request):
     """Handles an attestation proposal."""
     payload = await request.body()
     payload = cbor2.loads(payload)
-    c_r = payload[0]
-    attestation_proposal = payload[1]
+    #c_r = payload[0]
+    attestation_proposal = payload
 
     LOGGER.debug(
         f"Handling attestation proposal", attestation_proposal=hexlify(attestation_proposal).decode()
     )
     try:
-        attestation_request = await api.authority.handle_attestation_proposal(c_r, attestation_proposal) 
+        attestation_request = await api.authority.handle_attestation_proposal(attestation_proposal) 
         LOGGER.debug(
             f"prepared attestation request",
             attestation_request=hexlify(attestation_request).decode(),
         )
+        return Response(
+            content=attestation_request, media_type="binary/octet-stream"
+        )
+    except NoMatchError as e:
+        LOGGER.debug(f"cannot generate attestation request")
+        raise HTTPException(status_code=403, detail = str(e))
+
+# need to improve the function, select evidence type, change the exception
+@api.post(
+    path="/.well-known/lake-ra/mutual-ead-1",
+    summary="Handles ead for mutual attestation",
+)
+async def lake_ra_mutual_ead_1(request: Request):
+    """Handles ead for mutual attestation."""
+    payload = await request.body()
+    payload = cbor2.loads(payload)
+    #c_r = payload[0]
+    attestation_proposal = payload
+
+    LOGGER.debug(
+        f"Handling attestation proposal", attestation_proposal=hexlify(attestation_proposal).decode()
+    )
+    try:
+        attestation_request = await api.authority.handle_attestation_proposal(attestation_proposal) 
+        LOGGER.debug(
+            f"prepared attestation request",
+            attestation_request=hexlify(attestation_request).decode(),
+        )
+        api.authority.nonce_controller = secrets.token_bytes(8)
+        attestation_request = attestation_request + cbor2.dumps(api.authority.nonce_controller)
         return Response(
             content=attestation_request, media_type="binary/octet-stream"
         )
@@ -133,14 +167,45 @@ async def lake_ra_evidence(request: Request):
     """Handles an evidence attestation token."""
     payload = await request.body()
     payload = cbor2.loads(payload)
-    c_r = payload[0]
-    evidence = payload[1]
+    #c_r = payload[0]
+    evidence = payload
     
     public_key_bytes = api.authority.public_key_bytes
-    if await api.authority.evaluate_evidence(c_r, evidence, public_key_bytes):
-        LOGGER.debug(f"Attestation result is good")
+    if await api.authority.evaluate_evidence(evidence, public_key_bytes, approved_hash_dotbot):
+        print(f"Attestation result is good")
         attestation_result = 0
         return Response(content= cbor2.dumps(attestation_result), media_type="binary/octet-stream")
+    else:
+        LOGGER.debug(f"Attestation result is bad")
+        return Response(content= cbor2.dumps(-1), media_type="binary/octet-stream")
+        #raise HTTPException(status_code=400, detail="Verification failed")
+
+@api.post(
+    path="/.well-known/lake-ra/mutual-evidence",
+    summary="Handles two evidence attestation tokens",
+)
+async def lake_ra_mutual_evidence(request: Request):
+    """Handles two evidence attestation tokens."""
+    payload = await request.body()
+    payload = cbor2.loads(payload)
+    #c_r = payload[0]
+    evidence_bg = payload[0]
+    evidence_pp = payload[1]
+    nonce_result_pp = payload[2]
+    
+    public_key_dotbot = api.authority.public_key_bytes
+    public_key_controller = api.authority.public_key_controller
+    # first start with the evidence in the background-check model
+    if await api.authority.evaluate_evidence(evidence_bg, public_key_dotbot, approved_hash_dotbot, 0):
+        LOGGER.debug(f"DotBot Attestation result in background-check model is good")
+        attestation_result = 0
+        # then start with the attestation of the evidence in the passport model
+        if await api.authority.evaluate_evidence(evidence_pp, public_key_controller, approved_hash_controller, 1):
+            #attestation_result = 0
+            result_pp = generate_result_pp(1, nonce_result_pp)
+        else:
+            result_pp = generate_result_pp(2, nonce_result_pp)
+        return Response(content= cbor2.dumps(attestation_result) + result_pp, media_type="binary/octet-stream")
     else:
         LOGGER.debug(f"Attestation result is bad")
         return Response(content= cbor2.dumps(-1), media_type="binary/octet-stream")

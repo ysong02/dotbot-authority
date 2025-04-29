@@ -1,7 +1,8 @@
 import cbor2
 from pycose.messages.sign1message import Sign1Message
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey, Ed25519PrivateKey
 from logger import LOGGER
+from attestation_provision import private_key_verifier
 
 IANA_CBOR_COSWID_FILE_FS_NAME_KEY = 24
 #IANA_CBOR_COSWID_FILE_SIZE_KEY = 20
@@ -42,7 +43,7 @@ def parse_payload(payload_bytes):
             content_format_id = measurement[0]
             coswid = measurement[1]
             #tag_id = coswid.get(IANA_CBOR_COSWID_TAG_ID_KEY)
-            tag_version = coswid.get(IANA_CBOR_COSWID_TAG_VERSION_KEY)
+            #tag_version = coswid.get(IANA_CBOR_COSWID_TAG_VERSION_KEY)
             #software_name = coswid.get(IANA_CBOR_COSWID_SOFTWARE_NAME_KEY)
 
             # entity = coswid.get(IANA_CBOR_COSWID_ENTITY_KEY)
@@ -76,7 +77,7 @@ def parse_payload(payload_bytes):
     decoded_info["measurements"].append({
         "content_format_id": content_format_id,
         #"tag_id": tag_id,
-        "tag_version": tag_version,
+        #"tag_version": tag_version,
         #"software_name": software_name,
         #"entity_name": entity_name,
         #"entity_role": entity_role,
@@ -112,4 +113,30 @@ def decode_cose_sign1_message(cose_sign1_bytes, public_key_bytes):
 
     return decode_info
 
+def generate_result_pp(result_int, nonce_reuslt_pp):
+    token_payload = {
+        256:'controller',
+        10: nonce_reuslt_pp,
+        274:[["", ["", result_int]]]
+    }
+    cbor_token_payload = cbor2.dumps(token_payload)
+    protected = cbor2.dumps({1:-8})
     
+    #prepare the signature of cose_sign1
+    sig_structure = [
+        "Signature1", protected, b"", cbor_token_payload
+    ]
+    cbor_sig_structure = cbor2.dumps(sig_structure)
+    print(cbor_sig_structure.hex(" "))
+    private_key = Ed25519PrivateKey.from_private_bytes(private_key_verifier)
+    signature = private_key.sign(cbor_sig_structure)
+
+    # assemble to be a cose_sign1
+    cose_sign1 = [
+        protected,
+        {},
+        cbor_token_payload,
+        signature
+    ]
+    tagged_cose = cbor2.dumps(cbor2.CBORTag(18, cose_sign1))
+    return tagged_cose

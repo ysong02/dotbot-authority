@@ -1,8 +1,9 @@
 import cbor2
 from pycose.messages.sign1message import Sign1Message
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey, Ed25519PrivateKey
+from cryptography.exceptions import InvalidSignature
 from logger import LOGGER
-from attestation_provision import private_key_verifier
+import attestation_provision
 
 IANA_CBOR_COSWID_FILE_FS_NAME_KEY = 24
 #IANA_CBOR_COSWID_FILE_SIZE_KEY = 20
@@ -128,7 +129,7 @@ def generate_result_pp(result_int, nonce_reuslt_pp):
     ]
     cbor_sig_structure = cbor2.dumps(sig_structure)
     print(cbor_sig_structure.hex(" "))
-    private_key = Ed25519PrivateKey.from_private_bytes(private_key_verifier)
+    private_key = Ed25519PrivateKey.from_private_bytes(attestation_provision.private_key_verifier)
     signature = private_key.sign(cbor_sig_structure)
 
     # assemble to be a cose_sign1
@@ -140,3 +141,29 @@ def generate_result_pp(result_int, nonce_reuslt_pp):
     ]
     tagged_cose = cbor2.dumps(cbor2.CBORTag(18, cose_sign1))
     return tagged_cose
+
+# for swarm attestation
+def mr_swarm_check_signature(signature_attester, asn_dl, version, node_id):
+    # prepare sig_structure
+    hash_verifier = attestation_provision.swarm_reference_value_list[version]
+    key_id_verifier = attestation_provision.node_to_key_id[node_id]
+    sig_structure = cbor2.dumps([asn_dl, hash_verifier, key_id_verifier])
+    
+    public_key_bytes = attestation_provision.swarm_public_key_list[key_id_verifier]
+    public_key = Ed25519PublicKey.from_public_bytes(public_key_bytes)
+    try:
+        public_key.verify(signature_attester, sig_structure)
+        return True
+    except InvalidSignature:
+        return False
+
+def mr_swarm_generate_verification_response(result, node_id):
+    if (result):
+        sig_structure_cbor = cbor2.dumps([1, attestation_provision.key_id_v, node_id])
+    else:
+        sig_structure_cbor = cbor2.dumps([0, attestation_provision.key_id_v, node_id])
+    private_key = Ed25519PrivateKey.from_private_bytes(attestation_provision.private_key_verifier)
+    result_signed = private_key.sign(sig_structure_cbor)
+    # generate verification_response
+    verification_response = cbor2.dumps([result_signed, node_id, attestation_provision.key_id_v])
+    return verification_response

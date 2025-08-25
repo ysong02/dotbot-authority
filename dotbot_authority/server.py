@@ -20,7 +20,7 @@ from models import DotBotAuthorityIdentity
 from logger import LOGGER
 from errors import NoMatchError
 import secrets
-from attestation_provision import approved_hash_dotbot, approved_hash_controller
+from attestation_provision import approved_hash_dotbot, approved_hash_controller, freshness_threshold
 from attestation_decoder import generate_result_pp
 
 STATIC_FILES_DIR = os.path.join(os.path.dirname(__file__), "frontend", "dist")
@@ -171,7 +171,7 @@ async def lake_ra_evidence(request: Request):
     evidence = payload
     
     public_key_bytes = api.authority.public_key_bytes
-    if await api.authority.evaluate_evidence(evidence, public_key_bytes, approved_hash_dotbot):
+    if await api.authority.evaluate_evidence(evidence, public_key_bytes, approved_hash_dotbot, 0):
         print(f"Attestation result is good")
         attestation_result = 0
         return Response(content= cbor2.dumps(attestation_result), media_type="binary/octet-stream")
@@ -211,6 +211,16 @@ async def lake_ra_mutual_evidence(request: Request):
         return Response(content= cbor2.dumps(-1), media_type="binary/octet-stream")
         #raise HTTPException(status_code=400, detail="Verification failed")
 
+@api.post(
+    path="/.well-known/swarm-attestation/verification-request",
+    summary="Handles verification request for swarm attestation",
+)
+async def mr_swarm_handle_verification_request(request: Request):
+    """Handles a verification request for swarm attestation."""
+    payload = await request.body()
+    verification_response = await api.authority.mr_swarm_verification_result(payload, freshness_threshold)
+    return Response(content= verification_response, media_type="binary/octet-stream")
+    
 # endpoints for the frontend
 
 

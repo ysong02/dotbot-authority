@@ -20,11 +20,11 @@ from models import (
 )
 
 import hashlib
-from attestation_decoder import decode_cose_sign1_message
+import attestation_decoder
 from cryptography.exceptions import InvalidSignature
 import os
 
-from attestation_provision import public_key_bytes, public_key_controller, basedir, accepted_type_evidence, approved_hash_dotbot
+from attestation_provision import public_key_bytes, public_key_controller, basedir, accepted_type_evidence, approved_hash_dotbot, freshness_threshold, node_to_key_id, node_public_key_list
 from errors import NoMatchError
 
 class Authority:
@@ -131,7 +131,7 @@ class Authority:
     async def evaluate_evidence(self, cbor_bytes, public_key_bytes, approved_hash_evidence, model_type: int):
         attestation_result = False
         LOGGER.debug(f"start to evaluate the evidence")
-        decoded_info = decode_cose_sign1_message(cbor_bytes, public_key_bytes)
+        decoded_info = attestation_decoder.decode_cose_sign1_message(cbor_bytes, public_key_bytes)
         attester_nonce = decoded_info["nonce"]
         attester_ueid = decoded_info["ueid"]
         attester_hash = decoded_info["measurements"][0]["files_info"][0]["hash_value"]
@@ -211,3 +211,17 @@ class Authority:
         # self.logger.debug("notify client of attestation result", attestation_result = attestation_result)
         # await self.notify_clients(notif)
         return attestation_result
+    
+    async def mr_swarm_verification_result(self, verification_request, freshness_threshold, ):
+        asn_ul, asn_offset, evidence_cbor, node_id = cbor2.loads(verification_request)
+        version_attester, key_id_attester, signature_attester = cbor2.loads(evidence_cbor)
+        
+        # check freshness 
+        if (asn_offset > freshness_threshold):
+            return attestation_decoder.mr_swarm_generate_verification_response(False)
+        
+        asn_dl = asn_ul - asn_offset
+        if (attestation_decoder.mr_swarm_check_signature(signature_attester, asn_dl, version_attester, node_id)):
+            return attestation_decoder.mr_swarm_generate_verification_response(True)
+        else:
+            return attestation_decoder.mr_swarm_generate_verification_response(False)

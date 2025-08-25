@@ -13,3 +13,20 @@ approved_hash_dotbot = [
 approved_hash_controller = [
     ("h'A33F72164816796AD0A91D8546667B8EC144F4FD4BFE0C93EEBD346C385B3F0B")
 ]
+
+# for swarm attestation
+
+freshness_threshold = 8000
+node_to_key_id = {
+    795094838: 1,
+}
+
+swarm_public_key_list = {
+    1: bytes.fromhex('b24f6d4e5f8147af1d1cd8c26e1a510b7a0f7f0a7bcc60688955d327b99c6475')
+}
+
+swarm_reference_value_list = {
+    1: "h'DE6CD05D50778648BDB07B4D1C6DB81E0C2DF4533A32E515E533A26E2172873B'"
+}
+
+key_id_v = 5
